@@ -19,6 +19,7 @@
     "check": "node scripts/build-term.mjs && bash scripts/check.sh",
     "build:term": "node scripts/build-term.mjs",
     "ship": "bash scripts/ship.sh",
+    "ship:cloudflare": "bash scripts/ship-cloudflare.sh",
     "ship:all": "bash scripts/ship-all.sh"
   },
   "dependencies": {

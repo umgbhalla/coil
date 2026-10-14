@@ -65,7 +65,7 @@ Every request needs a Cloudflare Access token (`cf-access-token` header or the A
 
 ## Deploy
 
-One command per instance. Each instance has one config file that never leaves your machine.
+One command per instance. Each instance has one private config file, stored locally or generated inside Cloudflare Builds.
 
 **You need**
 
@@ -95,6 +95,22 @@ bun run ship -- deploy/mine.conf
 | `COIL_MODEL` | Default Workers AI model. Default `@cf/zai-org/glm-5.3`. |
 | `COIL_AI_GATEWAY` | An AI Gateway in the same account. Enables the `gateway/*` models through the AI binding, billed to that account. |
 | `COIL_MODEL_GATEWAY_URL`, `COIL_MODEL_GATEWAY_HEADER`, `COIL_MODEL_GATEWAY_TOKEN_COMMAND` | Any gateway that serves `<url>/openai` and `<url>/anthropic`. The token command runs on your machine at deploy time; its output becomes a Worker secret. |
+
+### Cloudflare Builds
+
+Connect this repository to a Worker named `coil` in Cloudflare Workers Builds. Disable preview builds and set:
+
+| Build setting | Value |
+| --- | --- |
+| Build command | `bun install --frozen-lockfile` |
+| Deploy command | `bun run ship:cloudflare` |
+| Build variable `BUN_VERSION` | `1.3.14` |
+| Build variable `COIL_ACCOUNT_ID` | Your Cloudflare account ID |
+| Build variable `COIL_DOMAIN` | The hostname protected by Access |
+| Build variable `COIL_ACCESS_TEAM` | `https://<team>.cloudflareaccess.com` |
+| Build variable `COIL_ACCESS_AUD` | The Access application's audience |
+
+The build deploy token needs Workers, Containers, Workers AI, and the hostname's zone permissions. Cloudflare Builds builds the pinned Nix base image once and stores it in your account's registry. Each deployment generates ignored `deploy/cloudflare.conf`, runs `ship` with its checks, builds the computer image, and checks the Access login. The first build includes the Nix base build and takes longer. Keep account and Access values in Cloudflare build variables; do not commit an instance config.
 
 ### Run locally
 

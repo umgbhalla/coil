@@ -1,0 +1,24 @@
+FROM docker.io/nixos/nix@sha256:ff480dbb23511aa1c10710aa068ceea5b93fed9bfce5f5379f3a6b07282cbc7b AS builder
+
+RUN printf '%s\n' \
+    'experimental-features = nix-command flakes' \
+    'sandbox = false' \
+    'build-users-group =' \
+    'filter-syscalls = false' \
+    'extra-substituters = https://devenv.cachix.org' \
+    'extra-trusted-public-keys = devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw=' \
+    > /etc/nix/nix.conf
+RUN git clone https://github.com/acoyfellow/nix-cf-proof.git /source && \
+    cd /source && git checkout 3f60b582bb11b3abaa24dffcb3a2ed18cfa5e6cf && \
+    nix build --out-link /devenv github:cachix/devenv/v2.4.0 && \
+    /devenv/bin/devenv build outputs.image && \
+    mkdir /archive /rootfs && \
+    image=$(find /nix/store -maxdepth 1 -name '*-docker-image-nix-cf-proof.tar.gz') && \
+    test -f "$image" && tar -xzf "$image" -C /archive && \
+    layer=$(find /archive -name layer.tar) && \
+    test -f "$layer" && tar -xf "$layer" -C /rootfs
+
+FROM scratch
+COPY --from=builder /rootfs/ /
+ENV PATH=/sandbox/bin HOME=/tmp SSL_CERT_FILE=/sandbox/etc/ssl/certs/ca-bundle.crt
+CMD ["/sandbox/bin/sleep", "infinity"]

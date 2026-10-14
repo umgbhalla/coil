@@ -98,7 +98,7 @@ bun run ship -- deploy/mine.conf
 
 ### Cloudflare Builds
 
-Connect this repository to a Worker named `coil` in Cloudflare Workers Builds. Disable preview builds and set:
+Allow the Cloudflare GitHub app access to this repository, then connect it to a Worker named `coil` in Cloudflare Workers Builds. Disable preview builds and set:
 
 | Build setting | Value |
 | --- | --- |

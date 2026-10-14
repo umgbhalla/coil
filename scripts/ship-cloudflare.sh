@@ -6,6 +6,7 @@ for key in COIL_ACCOUNT_ID COIL_DOMAIN COIL_ACCESS_TEAM COIL_ACCESS_AUD; do
   [ -n "${!key:-}" ] || { echo "missing build variable: $key" >&2; exit 2; }
 done
 export CLOUDFLARE_ACCOUNT_ID="$COIL_ACCOUNT_ID"
+export WRANGLER_CI_OVERRIDE_NETWORK_MODE_HOST=1
 
 base_tag=nix-cf-proof:3f60b582
 images=$(npx wrangler containers images list)

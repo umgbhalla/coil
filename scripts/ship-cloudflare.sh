@@ -29,8 +29,17 @@ const text = readFileSync(path, 'utf8').replace(/^([A-Z_]+)=.*$/gm, (line, key) 
 writeFileSync(path, text);
 NODE
 
-npx wrangler containers registries credentials registry.cloudflare.com --pull --expiration-minutes 30 --json \
-  | node -e 'let text=""; process.stdin.on("data", chunk => text += chunk).on("end", () => process.stdout.write(JSON.parse(text.slice(text.indexOf("{"))).password))' \
-  | docker login registry.cloudflare.com --username v1 --password-stdin
+node --input-type=module <<'NODE'
+import { execFileSync } from 'node:child_process';
+
+const credentials = JSON.parse(execFileSync('npx', [
+  'wrangler', 'containers', 'registries', 'credentials', 'registry.cloudflare.com',
+  '--pull', '--expiration-minutes', '30', '--json',
+], { encoding: 'utf8' }));
+execFileSync('docker', ['login', 'registry.cloudflare.com', '--username', credentials.username, '--password-stdin'], {
+  input: credentials.password,
+  stdio: ['pipe', 'inherit', 'inherit'],
+});
+NODE
 
 bun run ship -- deploy/cloudflare.conf

@@ -10,8 +10,11 @@ RUN printf '%s\n' \
     > /etc/nix/nix.conf
 RUN git clone https://github.com/acoyfellow/nix-cf-proof.git /source && \
     cd /source && git checkout 3f60b582bb11b3abaa24dffcb3a2ed18cfa5e6cf && \
-    nix build --out-link /devenv github:cachix/devenv/v2.4.0 && \
-    /devenv/bin/devenv build outputs.image && \
+    nix build --out-link /devenv github:cachix/devenv/v2.4.0
+# Some unsandboxed Nix builds leave this directory behind; upstream retries after removing it.
+RUN cd /source && \
+    build_image() { rm -rf /homeless-shelter; /devenv/bin/devenv build outputs.image; } && \
+    (build_image || build_image || build_image) && \
     mkdir /archive /rootfs && \
     image=$(find /nix/store -maxdepth 1 -name '*-docker-image-nix-cf-proof.tar.gz') && \
     test -f "$image" && tar -xzf "$image" -C /archive && \

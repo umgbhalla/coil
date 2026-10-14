@@ -10,7 +10,7 @@ export CLOUDFLARE_ACCOUNT_ID="$COIL_ACCOUNT_ID"
 base_tag=nix-cf-proof:3f60b582
 images=$(npx wrangler containers images list)
 if ! printf '%s\n' "$images" | grep -Eq '^nix-cf-proof[[:space:]]+3f60b582[[:space:]]*$'; then
-  docker build --platform linux/amd64 -f computer/Dockerfile.base -t "$base_tag" computer
+  docker build --network=host --platform linux/amd64 -f computer/Dockerfile.base -t "$base_tag" computer
   npx wrangler containers push "$base_tag"
 fi
 export NIX_IMAGE="registry.cloudflare.com/$COIL_ACCOUNT_ID/$base_tag"
